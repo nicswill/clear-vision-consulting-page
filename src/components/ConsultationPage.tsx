@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Eye, Heart, TrendingUp, Clock, Shield, Lightbulb, CheckCircle, Zap, Award, Star } from 'lucide-react';
 import { ConsultationForm } from './ConsultationForm';
 
@@ -7,36 +6,12 @@ interface ConsultationPageProps {
 }
 
 export function ConsultationPage({ onNavigateToThankYou }: ConsultationPageProps) {
-  const [showStickyButton, setShowStickyButton] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const formSection = document.getElementById('consultation-form');
-      if (formSection) {
-        const formTop = formSection.getBoundingClientRect().top;
-        setShowStickyButton(formTop > window.innerHeight);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const scrollToForm = () => {
     document.getElementById('consultation-form')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <div className="min-h-screen relative">
-      {showStickyButton && (
-        <button
-          onClick={scrollToForm}
-          className="md:hidden fixed bottom-4 left-4 right-4 z-40 bg-amber-500 text-slate-900 hover:bg-amber-400 px-6 py-4 rounded-full text-base font-semibold transition-colors shadow-lg"
-        >
-          Request Consultation
-        </button>
-      )}
       <section className="bg-gradient-to-br from-slate-900 to-slate-800 text-white py-20 lg:py-28">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">

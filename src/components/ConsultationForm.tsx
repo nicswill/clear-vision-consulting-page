@@ -1,6 +1,8 @@
 import { useState, FormEvent } from 'react';
-import { CheckCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { CheckCircle, Calendar } from 'lucide-react';
+
+const FORMSPREE_CONSULTATION_ENDPOINT = 'https://formspree.io/f/mqeywyla';
+const CALENDLY_URL = 'https://calendly.com/cvadmin-clearvisionleader/30min';
 
 interface ConsultationFormProps {
   onSuccess: () => void;
@@ -25,54 +27,29 @@ export function ConsultationForm({ onSuccess }: ConsultationFormProps) {
     setLoading(true);
 
     try {
-      // Save to database
-      const { error } = await supabase
-        .from('consultation_requests')
-        .insert([
-          {
-            full_name: formData.fullName,
-            email: formData.email,
-            phone: formData.phone,
-            organization: formData.organization,
-            leadership_role: formData.leadershipRole,
-            challenge: formData.challenge,
-            contact_method: formData.contactMethod,
-            best_time: formData.bestTime,
-          },
-        ]);
+      const response = await fetch(FORMSPREE_CONSULTATION_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          _subject: `Leadership Clarity Consultation Request from ${formData.fullName}`,
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          organization: formData.organization,
+          leadershipRole: formData.leadershipRole,
+          challenge: formData.challenge,
+          contactMethod: formData.contactMethod,
+          bestTime: formData.bestTime,
+        }),
+      });
 
-      if (error) throw error;
-
-      // Send email notifications
-      const emailResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-consultation-email`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            fullName: formData.fullName,
-            email: formData.email,
-            phone: formData.phone,
-            organization: formData.organization,
-            leadershipRole: formData.leadershipRole,
-            challenge: formData.challenge,
-            contactMethod: formData.contactMethod,
-            bestTime: formData.bestTime,
-          }),
-        }
-      );
-
-      if (!emailResponse.ok) {
-        console.error('Email notification failed, but form was saved to database');
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
       }
 
       setShowConfirmation(true);
-      setTimeout(() => {
-        onSuccess();
-      }, 3000);
     } catch (error) {
       console.error('Error submitting consultation request:', error);
       alert('There was an error submitting your request. Please try again.');
@@ -86,17 +63,24 @@ export function ConsultationForm({ onSuccess }: ConsultationFormProps) {
       <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
         <h3 className="text-2xl font-bold text-green-900 mb-4">
-          Thank you for requesting a Leadership Clarity Consultation.
+          Thank you for requesting a Leadership Clarity Consultation!
         </h3>
-        <p className="text-green-800 mb-4">
-          Your request has been received and our team will follow up shortly to
-          schedule your consultation.
+        <p className="text-green-800 mb-6">
+          Your request has been received successfully.
         </p>
-        <p className="text-green-800 mb-4">
-          We look forward to helping you gain clarity and strengthen your
-          leadership.
+        <p className="text-green-800 mb-6">
+          Ready to schedule your consultation now?
         </p>
-        <p className="text-green-900 font-semibold">
+        <a
+          href={CALENDLY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-amber-500 text-slate-900 hover:bg-amber-400 px-8 py-4 rounded-full text-lg font-semibold transition-colors"
+        >
+          <Calendar className="w-5 h-5" />
+          Schedule Your Consultation Now
+        </a>
+        <p className="text-green-900 font-semibold mt-8">
           — Dr. Kennita Williams
           <br />
           Clear Vision Consulting®
